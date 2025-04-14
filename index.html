@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Well Project Widget Demo</title>
+    <style>
+        /* Reset and general styles */
+        #well-widget * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Demo Page */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .demo-header {
+            background: #27ae60;
+            color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .content-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1, h2 {
+            margin-top: 0;
+        }
+
+        /* Widget Container - Fixed position */
+        #well-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        /* Main Button Styling */
+        #well-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #27ae60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            border: none;
+        }
+
+        #well-button:hover {
+            transform: scale(1.1);
+        }
+
+        #well-button-emoji {
+            font-size: 26px;
+        }
+
+        /* Popup Modal */
+        #well-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .popup-content {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Header section */
+        .popup-header {
+            background: #27ae60;
+            color: white;
+            padding: 15px 20px;
+            position: relative;
+        }
+
+        .popup-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .popup-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 20px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .popup-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Tabs */
+        .tabs-container {
+            display: flex;
+            background-color: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #27ae60;
+            border-bottom: 3px solid #27ae60;
+            background: white;
+        }
+
+        /* Tab Content Areas */
+        .tab-content {
+            padding: 20px;
+            display: none;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Reaction options - VERTICAL */
+        .reaction-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+        }
+
+        .reaction-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .reaction-option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reaction-option:hover {
+            border-color: #27ae60;
+            background: #e8f5e9;
+            transform: translateX(5px);
+        }
+
+        .reaction-option.highlighted {
+            border-color: #27ae60;
+            background: #e8f5e9;
+        }
+
+        .reaction-emoji {
+            font-size: 24px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .reaction-text {
+            font-size: 14px;
+            color: #555;
+        }
+
+        #dig-well-option {
+            border: 2px solid #27ae60;
+            background: #e8f5e9;
+        }
+
+        #dig-well-option:hover {
+            background: #c8e6c9;
+            border-color: #2ecc71;
+        }
+
+        /* Donation options - VERTICAL */
+        .donation-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+        }
+
+        .donation-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .donation-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .donation-option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .donation-option:hover {
+            border-color: #27ae60;
+            background: #e8f5e9;
+            transform: translateX(5px);
+        }
+
+        .donation-option.selected {
+            border-color: #27ae60;
+            background: #e8f5e9;
+        }
+
+        .donation-info {
+            flex: 1;
+        }
+
+        .inches {
+            font-weight: bold;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .amount {
+            font-size: 16px;
+            color: #27ae60;
+            margin-top: 2px;
+        }
+
+        .impact {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Impact Tab */
+        .impact-content {
+            padding: 10px 0;
+        }
+
+        .impact-item {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+
+        .impact-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .impact-text {
+            flex: 1;
+        }
+
+        .impact-text h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .impact-text p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* Progress Tab */
+        .well-progress {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #27ae60;
+            width: 35%; /* Example progress */
+        }
+
+        .progress-info {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+
+        .well-illustration {
+            margin: 20px auto;
+            width: 100%;
+            max-width: 200px;
+            height: 300px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .well-water {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 35%; /* Same as progress percentage */
+            background: linear-gradient(to bottom, #64b5f6, #1976d2);
+            transition: height 1s ease;
+        }
+
+        .well-depth-marker {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background: rgba(0, 0, 0, 0.1);
+            left: 0;
+        }
+
+        .well-target {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: #e74c3c;
+            left: 0;
+            bottom: 95%; /* 65ft target near top */
+        }
+
+        .well-label {
+            position: absolute;
+            right: 5px;
+            padding: 2px 5px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 3px;
+            font-size: 10px;
+            color: #333;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .donate-button {
+            flex: 1;
+            padding: 12px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .donate-button:hover {
+            background: #219653;
+        }
+
+        /* Toast notification */
+        #toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 20000;
+            display: none;
+        }
+
+        /* Simulated payment popup */
+        #payment-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 11000;
+        }
+
+        .payment-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .payment-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .payment-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .payment-body {
+            margin-bottom: 20px;
+        }
+
+        .payment-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Mobile optimization */
+        @media (max-width: 480px) {
+            .popup-content {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Page Content -->
+    <div class="demo-header">
+        <h1>Well Project Widget Demo</h1>
+        <p>Help farmers access clean water through our well-drilling project</p>
+    </div>
+
+    <div class="content-box">
+        <h2>About Our Well Project</h2>
+        <p>Our most pressing goal is to dig a well on the Agape land and install a submersible pump. This critical infrastructure would help mitigate against drought conditions, enable vegetable growing during the dry season, and support year-round agricultural training.</p>
+        <p>The estimated cost for the well and pump is $10,000, with good water available about 65 feet down.</p>
+    </div>
+
+    <!-- Well Project Widget -->
+    <div id="well-widget">
+        <!-- Main Button -->
+        <button id="well-button">
+            <span id="well-button-emoji">💧</span>
+        </button>
+
+        <!-- Popup Container -->
+        <div id="well-popup">
+            <div class="popup-content">
+                <!-- Popup Header -->
+                <div class="popup-header">
+                    <div class="popup-title">Help Farmers Access Water</div>
+                    <div class="popup-subtitle">Support our well-drilling project</div>
+                    <div class="popup-close">&times;</div>
+                </div>
+
+                <!-- Tabs Navigation -->
+                <div class="tabs-container">
+                    <div class="tab active" data-tab="reactions">React</div>
+                    <div class="tab" data-tab="sponsor">Sponsor</div>
+                    <div class="tab" data-tab="impact">Impact</div>
+                    <div class="tab" data-tab="progress">Progress</div>
+                </div>
+
+                <!-- Reactions Tab -->
+                <div id="reactions-tab" class="tab-content active">
+                    <div class="reaction-title">How would you like to help?</div>
+                    
+                    <div class="reaction-options">
+                        <div id="dig-well-option" class="reaction-option highlighted">
+                            <div class="reaction-emoji">⛏️</div>
+                            <div class="reaction-text">Dig Well ($13 per inch)</div>
+                        </div>
+                        
+                        <div class="reaction-option">
+                            <div class="reaction-emoji">🙏</div>
+                            <div class="reaction-text">Learn More</div>
+                        </div>
+                        
+                        <div class="reaction-option">
+                            <div class="reaction-emoji">🌱</div>
+                            <div class="reaction-text">Support Farmers</div>
+                        </div>
+                        
+                        <div class="reaction-option">
+                            <div class="reaction-emoji">💪</div>
+                            <div class="reaction-text">Volunteer</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sponsor Tab -->
+                <div id="sponsor-tab" class="tab-content">
+                    <div class="donation-title">Select Well Depth to Sponsor</div>
+                    <div class="donation-subtitle">Each inch costs $13 and helps provide sustainable water access</div>
+                    
+                    <div class="donation-options">
+                        <div class="donation-option" data-inches="1" data-amount="13">
+                            <div class="donation-info">
+                                <div class="inches">1 inch</div>
+                                <div class="amount">$13</div>
+                                <div class="impact">Provides tools</div>
+                            </div>
+                        </div>
+                        
+                        <div class="donation-option" data-inches="6" data-amount="78">
+                            <div class="donation-info">
+                                <div class="inches">6 inches</div>
+                                <div class="amount">$78</div>
+                                <div class="impact">Supplies for a day</div>
+                            </div>
+                        </div>
+                        
+                        <div class="donation-option" data-inches="12" data-amount="156">
+                            <div class="donation-info">
+                                <div class="inches">12 inches</div>
+                                <div class="amount">$156</div>
+                                <div class="impact">One foot of progress</div>
+                            </div>
+                        </div>
+                        
+                        <div class="donation-option" data-inches="24" data-amount="312">
+                            <div class="donation-info">
+                                <div class="inches">24 inches</div>
+                                <div class="amount">$312</div>
+                                <div class="impact">Two feet of progress</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Impact Tab -->
+                <div id="impact-tab" class="tab-content">
+                    <div class="impact-content">
+                        <div class="impact-item">
+                            <div class="impact-icon">💧</div>
+                            <div class="impact-text">
+                                <h3>Reliable Water Access</h3>
+                                <p>The well will provide year-round access to clean water for farming, reducing dependency on seasonal rainfall.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="impact-item">
+                            <div class="impact-icon">🌱</div>
+                            <div class="impact-text">
+                                <h3>Crop Cultivation</h3>
+                                <p>Enables vegetable growing during the dry season, creating food security for the community.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="impact-item">
+                            <div class="impact-icon">👨‍🌾</div>
+                            <div class="impact-text">
+                                <h3>Farmer Training</h3>
+                                <p>Supports year-round agricultural training that teaches sustainable farming techniques.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="impact-item">
+                            <div class="impact-icon">🏫</div>
+                            <div class="impact-text">
+                                <h3>Community Support</h3>
+                                <p>Harvests from the farm sustain college staff and students for a full year at our training base.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Tab -->
+                <div id="progress-tab" class="tab-content">
+                    <div class="donation-title">Our 65-foot Well Project</div>
+                    <div class="donation-subtitle">Watch our progress as we dig toward clean water</div>
+                    
+                    <div class="well-progress">
+                        <div class="progress-label">
+                            <span>0 ft</span>
+                            <span>65 ft goal</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-info">35% complete - 23 feet of 65 feet drilled</div>
+                    </div>
+                    
+                    <div class="well-illustration">
+                        <div class="well-water"></div>
+                        <div class="well-target"></div>
+                        <div class="well-label" style="bottom: 95%;">Target: 65 ft</div>
+                        <div class="well-label" style="bottom: 35%;">Current: 23 ft</div>
+                        
+                        <!-- Depth markers -->
+                        <div class="well-depth-marker" style="bottom: 75%;"></div>
+                        <div class="well-depth-marker" style="bottom: 65%;"></div>
+                        <div class="well-depth-marker" style="bottom: 55%;"></div>
+                        <div class="well-depth-marker" style="bottom: 45%;"></div>
+                        <div class="well-depth-marker" style="bottom: 25%;"></div>
+                        <div class="well-depth-marker" style="bottom: 15%;"></div>
+                        <div class="well-depth-marker" style="bottom: 5%;"></div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="donate-button">Donate Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast"></div>
+
+    <!-- Simulated payment popup -->
+    <div id="payment-popup">
+        <div class="payment-content">
+            <div class="payment-header">
+                <div class="payment-title">Complete Your Donation</div>
+                <div style="color: #666;">Sponsoring <span id="inches-display">0</span> inches of well drilling</div>
+            </div>
+            <div class="payment-body">
+                <div style="text-align: center; padding: 20px; background: #f5f5f5; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #27ae60">$<span id="amount-display">0</span></div>
+                    <div style="color: #666; font-size: 14px;">Your generous contribution</div>
+                </div>
+                <p style="text-align: center; margin-bottom: 20px;">In a real implementation, this would connect to the Raisley.com payment platform.</p>
+                <button id="demo-complete" style="width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Complete Demo Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Widget Configuration
+        const config = {
+            emojis: ['💧', '👨‍🌾', '🌱', '⛏️', '🚜'],
+            rotationInterval: 3000,
+            progressPercent: 35,
+            targetDepth: 65,
+            currentDepth: 23
+        };
+
+        // State
+        let selectedAmount = null;
+        let selectedInches = null;
+
+        // DOM Elements
+        const elements = {
+            button: document.getElementById('well-button'),
+            buttonEmoji: document.getElementById('well-button-emoji'),
+            popup: document.getElementById('well-popup'),
+            closeButton: document.querySelector('.popup-close'),
+            tabs: document.querySelectorAll('.tab'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            reactionOptions: document.querySelectorAll('.reaction-option'),
+            donationOptions: document.querySelectorAll('.donation-option'),
+            donateButton: document.querySelector('.donate-button'),
+            toast: document.getElementById('toast'),
+            paymentPopup: document.getElementById('payment-popup'),
+            inchesDisplay: document.getElementById('inches-display'),
+            amountDisplay: document.getElementById('amount-display'),
+            demoComplete: document.getElementById('demo-complete')
+        };
+
+        // Initialize
+        function init() {
+            setupEventListeners();
+            startEmojiRotation();
+            updateProgressVisuals();
+        }
+
+        // Set up emoji rotation
+        function startEmojiRotation() {
+            let currentIndex = 0;
+            setInterval(() => {
+                currentIndex = (currentIndex + 1) % config.emojis.length;
+                elements.buttonEmoji.textContent = config.emojis[currentIndex];
+            }, config.rotationInterval);
+        }
+
+        // Update progress bar and well visualization
+        function updateProgressVisuals() {
+            const percent = config.progressPercent;
+            document.querySelector('.progress-fill').style.width = `${percent}%`;
+            document.querySelector('.well-water').style.height = `${percent}%`;
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Main button - open popup
+            elements.button.addEventListener('click', () => {
+                elements.popup.style.display = 'flex';
+                showToast('Choose how you would like to help');
+            });
+
+            // Close button
+            elements.closeButton.addEventListener('click', () => {
+                elements.popup.style.display = 'none';
+            });
+
+            // Close when clicking outside content
+            elements.popup.addEventListener('click', (e) => {
+                if (e.target === elements.popup) {
+                    elements.popup.style.display = 'none';
+                }
+            });
+
+            // Tab switching
+            elements.tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+
+            // Reaction options
+            elements.reactionOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Highlight selected option
+                    elements.reactionOptions.forEach(opt => opt.classList.remove('highlighted'));
+                    option.classList.add('highlighted');
+
+                    // If dig well option, switch to sponsor tab
+                    if (option.id === 'dig-well-option') {
+                        switchTab('sponsor');
+                        showToast('Select inches to sponsor');
+                    } else if (option.querySelector('.reaction-text').textContent.includes('Learn More')) {
+                        switchTab('impact');
+                        showToast('Learn about the impact of this project');
+                    } else if (option.querySelector('.reaction-text').textContent.includes('Support Farmers')) {
+                        switchTab('sponsor');
+                        showToast('Choose a donation amount');
+                    } else {
+                        showToast('Feature coming soon in full version');
+                    }
+                });
+            });
+
+            // Donation options
+            elements.donationOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Highlight selected option
+                    elements.donationOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+
+                    // Update selected amount
+                    selectedInches = option.getAttribute('data-inches');
+                    selectedAmount = option.getAttribute('data-amount');
+
+                    // Update donate button
+                    elements.donateButton.textContent = `Donate $${selectedAmount} Now`;
+                });
+            });
+
+            // Donate button
+            elements.donateButton.addEventListener('click', () => {
+                if (selectedAmount) {
+                    // Show payment popup
+                    elements.inchesDisplay.textContent = selectedInches;
+                    elements.amountDisplay.textContent = selectedAmount;
+                    elements.paymentPopup.style.display = 'flex';
+                } else {
+                    // If no amount selected, prompt user
+                    showToast('Please select a donation amount first');
+                    switchTab('sponsor');
+                }
+            });
+
+            // Demo payment complete
+            elements.demoComplete.addEventListener('click', () => {
+                elements.paymentPopup.style.display = 'none';
+                elements.popup.style.display = 'none';
+                showToast('Thank you for your donation!');
+            });
+
+            // Close payment popup
+            elements.paymentPopup.addEventListener('click', (e) => {
+                if (e.target === elements.paymentPopup) {
+                    elements.paymentPopup.style.display = 'none';
+                }
+            });
+        }
+
+        // Switch between tabs
+        function switchTab(tabName) {
+            // Update tab buttons
+            elements.tabs.forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+            });
+
+            // Update tab content
+            elements.tabContents.forEach(content => {
+                content.classList.toggle('active', content.id === `${tabName}-tab`);
+            });
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            elements.toast.textContent = message;
+            elements.toast.style.display = 'block';
+            
+            // Hide after 2.5 seconds
+            setTimeout(() => {
+                elements.toast.style.display = 'none';
+            }, 2500);
+        }
+
+        // Initialize the widget
+        init();
+    </script>
+</body>
+</html>
